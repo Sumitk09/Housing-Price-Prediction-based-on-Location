@@ -1,51 +1,312 @@
-🏠 Housing Price Prediction Based on Location
+# 🏠 Housing Price Prediction System (End-to-End ML Pipeline)
 
-This project focuses on predicting housing prices using machine learning techniques and location-based data. The goal is to analyze how various features such as area, number of rooms, population, income levels, and proximity to key facilities impact housing prices.
+## 📌 Overview
 
-The dataset used in this project is inspired by the California Housing dataset. A similar program and concept are also explained in the Data Science course by CodeWithHarry, making it a great reference for learners building real-world predictive models.
+This project builds a **complete Machine Learning pipeline** to predict housing prices based on location and socio-economic features such as:
 
-📊 Objectives
+* Median income
+* Population
+* Number of rooms
+* Latitude & longitude
+* Ocean proximity
 
-Understand the relationship between housing prices and location-related features.
+The system is divided into two key parts:
 
-Perform data cleaning, handling missing values, and feature transformation.
+* **Model experimentation & evaluation (`main_old.py`)**
+* **Production-ready training & inference (`main.py`)**
 
-Visualize data to identify important correlations and outliers.
+---
 
-Implement and compare regression models such as:
+## 🎯 Objectives
 
-Linear Regression
+* Understand the impact of location-based features on housing prices
+* Compare multiple regression models
+* Select the best model using evaluation metrics
+* Build a reusable and production-ready ML pipeline
+* Perform batch predictions on new data
 
-Decision Tree Regressor
+---
 
-Random Forest Regressor
+## 🧱 Project Architecture
 
-Evaluate models using metrics like RMSE (Root Mean Squared Error) and R² Score.
+```text
+housing.csv
+   ↓
+Stratified Sampling (income_category)
+   ↓
+Train/Test Split
+   ↓
+Preprocessing Pipeline
+   ↓
+Model Training (main_old.py)
+   ↓
+Model Evaluation (RMSE + Cross Validation)
+   ↓
+Model Selection (Random Forest)
+   ↓
+Production Pipeline (main.py)
+   ↓
+Model Serialization (joblib)
+   ↓
+Inference (input.csv → output.csv)
+```
 
-Deploy a trained model to predict housing prices for new input data.
+---
 
-🧠 Skills & Concepts Covered
+## 📂 Project Structure
 
-Exploratory Data Analysis (EDA)
+```text
+project/
+│
+├── housing.csv          # Dataset
+├── input.csv            # Input for inference
+├── output.csv           # Predictions
+│
+├── main_old.py          # Model experimentation & evaluation
+├── main.py              # Production-ready pipeline
+│
+├── model.pkl            # Saved trained model
+├── pipeline.pkl         # Saved preprocessing pipeline
+│
+└── README.md
+```
 
-Data Preprocessing & Feature Scaling
+---
 
-One-Hot Encoding for categorical variables
+# 🔬 Part 1: Model Experimentation (`main_old.py`)
 
-Train-Test Split and Cross-Validation
+## ⚙️ Workflow
 
-Model Training, Tuning & Evaluation
+### 1. Data Loading
 
-Saving and Loading Models using joblib / pickle
+* Reads dataset using Pandas
 
-💻 Tools & Libraries
+### 2. Stratified Sampling
 
-Python, Pandas, NumPy, Matplotlib, Seaborn
+* Creates `income_category` using `median_income`
+* Ensures balanced train-test distribution
 
-Scikit-Learn
+### 3. Feature Engineering
 
-Jupyter Notebook
+* Separates:
 
-🚀 Outcome
+  * Features
+  * Target (`median_house_value`)
 
-By the end of this project, you’ll have a complete machine learning pipeline capable of predicting housing prices based on location-driven data — a foundational project for mastering data science and real-world predictive modeling.
+### 4. Preprocessing Pipeline
+
+#### Numerical Features
+
+* Median Imputation
+* Standard Scaling
+
+#### Categorical Features
+
+* OneHot Encoding
+
+#### Combined using:
+
+* `ColumnTransformer`
+
+---
+
+## 🤖 Models Evaluated
+
+### 1. Linear Regression
+
+* RMSE: **~69,050**
+
+👉 Insight:
+
+* High bias
+* Underfitting
+
+---
+
+### 2. Decision Tree Regressor
+
+* RMSE: **0.0 (training)**
+
+👉 Insight:
+
+* Memorizes training data
+* Severe overfitting
+
+---
+
+### 3. Random Forest Regressor
+
+* RMSE: **~18,333**
+
+👉 Insight:
+
+* Handles non-linear patterns
+* Reduces overfitting
+* Best generalization
+
+---
+
+## 📊 Cross-Validation Results
+
+* Used **10-fold cross-validation**
+* Metric: **RMSE**
+
+👉 Observations:
+
+* Linear Regression → Stable but high error
+* Decision Tree → High variance
+* Random Forest → Balanced and reliable
+
+---
+
+## 🏆 Model Selection
+
+✅ **Random Forest Regressor selected** because:
+
+* Lowest realistic RMSE
+* Good bias-variance balance
+* Robust for real-world data
+
+---
+
+# 🚀 Part 2: Production Pipeline (`main.py`)
+
+## ⚙️ Workflow
+
+### 1. Training Phase (if model not exists)
+
+* Load dataset
+* Perform stratified sampling
+* Build preprocessing pipeline
+* Train Random Forest model
+* Save:
+
+  * `model.pkl`
+  * `pipeline.pkl`
+
+---
+
+### 2. Inference Phase
+
+* Load saved model & pipeline
+* Read `input.csv`
+* Transform features
+* Predict housing prices
+* Save results to `output.csv`
+
+---
+
+## 🔮 Inference Flow
+
+```text
+input.csv
+   ↓
+Load pipeline.pkl
+   ↓
+Transform features
+   ↓
+Load model.pkl
+   ↓
+Predict
+   ↓
+output.csv
+```
+
+---
+
+## ⚠️ Important Implementation Notes
+
+### ✅ Data Leakage Prevention
+
+* `income_category` used only for stratification
+* Removed before training
+
+### ✅ Inference Safety Fix
+
+* Drop `median_house_value` before transformation if present
+
+### ❗ Decision Tree Warning
+
+* RMSE = 0 indicates overfitting (not production-safe)
+
+---
+
+## 🧠 Skills & Concepts Covered
+
+* Exploratory Data Analysis (EDA)
+* Data Preprocessing & Pipelines
+* Feature Scaling & Encoding
+* Stratified Sampling
+* Cross Validation
+* Model Evaluation (RMSE)
+* Bias vs Variance Tradeoff
+* Model Serialization (joblib)
+* Production ML Pipeline Design
+
+---
+
+## 💻 Tools & Libraries
+
+* Python
+* Pandas
+* NumPy
+* Scikit-learn
+* Joblib
+
+---
+
+## 🚀 How to Run
+
+### 1. Install Dependencies
+
+```bash
+pip install pandas numpy scikit-learn joblib
+```
+
+---
+
+### 2. Run Training (First Time)
+
+```bash
+python main.py
+```
+
+---
+
+### 3. Run Inference
+
+```bash
+python main.py
+```
+
+---
+
+## 📈 Future Enhancements
+
+* Hyperparameter tuning (GridSearchCV / RandomizedSearchCV)
+* Add Gradient Boosting / XGBoost
+* Feature engineering (e.g., rooms per household)
+* Build REST API using FastAPI
+* Dockerize the application
+* Add monitoring & retraining pipeline
+
+---
+
+## 🎓 Learning Outcome
+
+This project demonstrates:
+
+* Transition from **experimentation → production ML system**
+* Proper model evaluation and selection
+* Real-world pipeline design
+* Scalable and reusable ML architecture
+
+---
+
+## 📌 Conclusion
+
+This project showcases a **complete end-to-end machine learning system**, from raw data processing to deployment-ready inference.
+
+The **Random Forest model** outperforms other models with significantly lower RMSE and strong generalization, making it suitable for real-world housing price prediction tasks.
+
+---
